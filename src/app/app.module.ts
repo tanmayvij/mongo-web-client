@@ -3,10 +3,20 @@ import { NgModule } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { ConnectComponent } from './connect/connect.component';
+import { DatabasesComponent } from './databases/databases.component';
+import { CollectionsComponent } from './collections/collections.component';
+import { ViewCollectionComponent } from './view-collection/view-collection.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    ConnectComponent,
+    DatabasesComponent,
+    CollectionsComponent,
+    ViewCollectionComponent,
+    DashboardComponent
   ],
   imports: [
     BrowserModule,
