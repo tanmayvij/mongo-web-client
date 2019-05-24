@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -11,9 +12,25 @@ export class DashboardComponent implements OnInit {
   username: String = "";
   authdb: String = "";
   time: String = "";
-  constructor() { }
-
-  ngOnInit() {
+  constructor(private router: Router) {
+    this.host = sessionStorage.host;
+    this.port = sessionStorage.port;
+    this.username = sessionStorage.username;
+    this.authdb = sessionStorage.authdb;
+    this.time = '';
   }
 
+  ngOnInit() {
+    if(sessionStorage.token == null)
+      this.router.navigate(['/']);
+  }
+  logout()
+  {
+    sessionStorage.clear();
+    this.router.navigate(['/']);
+  }
+  view()
+  {
+    this.router.navigate(['/databases']);
+  }
 }

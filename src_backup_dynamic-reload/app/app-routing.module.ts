@@ -10,11 +10,7 @@ import { ErrorComponent } from './error/error.component';
 const routes: Routes = [
   {
     path: '',
-    component: ConnectComponent
-  },
-  {
-    path: 'dashboard',
-    component: DashboardComponent
+    component: sessionStorage.token == null ? ConnectComponent : DashboardComponent
   },
   {
     path: 'databases',

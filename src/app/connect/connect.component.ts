@@ -2,44 +2,50 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { DashboardComponent } from '../dashboard/dashboard.component';
+declare var M: any;
 
 @Component({
   selector: 'app-connect',
   templateUrl: './connect.component.html',
-  styleUrls: ['./connect.component.css'],
-  entryComponents: [DashboardComponent]
+  styleUrls: ['./connect.component.css']
 })
 export class ConnectComponent implements OnInit {
   connectForm: FormGroup;
-  postData: any = {
-
-  };
   constructor(private fb: FormBuilder, private router: Router, private http: HttpClient) {
     this.connectForm = fb.group({
-      'host': [],
-      'port': [],
-      'username': [],
-      'password': [],
-      'authdb': [],
-      'srv': [],
+      'host': ['', Validators.required],
+      'port': [, Validators.required],
+      'username': ['', Validators.required],
+      'password': ['', Validators.required],
+      'authdb': ['', Validators.required],
+      'srv': []
     });
    }
 
   ngOnInit() {
+    if(sessionStorage.token)
+      this.router.navigate(['/dashboard']);
   }
   connect()
   {
-    //this.http.post('/api/auth/connect', this.postData).subscribe(data => {
-      sessionStorage.token = 'token';
-    //  sessionStorage.host = data['host'];
-    //  sessionStorage.port = data['port'];
-    //  sessionStorage.username = data['username'];
-    //  sessionStorage.authdb = data['authdb'];
-      this.router.config.unshift({'path': '', 'component':  DashboardComponent });
-      console.log(this.router.config);
-      this.router.navigateByUrl('/rf', {skipLocationChange: true}).then(()=>
-      this.router.navigate(["/"])); 
-    //});
+    
+    if(this.connectForm.controls.host.errors ||
+      this.connectForm.controls.port.errors ||
+      this.connectForm.controls.username.errors ||
+      this.connectForm.controls.password.errors ||
+      this.connectForm.controls.authdb.errors)
+    { 
+      M.toast({html: "Error: All fields are required.", displayLength: 2000});
+    }
+    else {
+      this.http.post('http://localhost/api/auth/connect', this.connectForm.value).subscribe(data => {
+        sessionStorage.token = data['token'];
+        sessionStorage.host = data['host'];
+        sessionStorage.port = data['port'];
+        sessionStorage.username = data['username'];
+        sessionStorage.authdb = data['authdb'];
+        this.router.navigate(['/dashboard']);
+      });
+    }
   }
 }

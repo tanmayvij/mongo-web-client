@@ -1,0 +1,11 @@
+footer
+{
+    background: #000;
+    color: #ffffff;
+    padding-top: 40px;
+    padding-left: 100px;
+    padding-bottom: 70px;
+    position: absolute;
+    left: 0;
+    right: 0;
+}

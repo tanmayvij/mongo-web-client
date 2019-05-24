@@ -2,34 +2,34 @@
 
 <form [formGroup]="connectForm" (ngSubmit)="connect()">
   <div class="input-field col s6">
-    <input type="text" formControlName="host" required>
+    <input type="text" name="host">
     <label for="host">Host</label><br><br>
   </div>
 
   <div class="input-field col s6">
-    <input type="number" formControlName="port" required>
+    <input type="number" name="port">
     <label for="port">Port</label><br><br>
   </div>
 
   <div class="input-field col s6">  
-    <input type="text" formControlName="username" required>
+    <input type="text" name="username">
     <label for="username">Username</label><br><br>
   </div>
 
   <div class="input-field col s6">
-    <input type="password" formControlName="password" required>
+    <input type="password" name="password">
     <label for="password">Password</label><br><br>
   </div>
 
   <div class="input-field col s6">    
-    <input type="text" formControlName="authdb" required>
+    <input type="text" name="authdb">
     <label for="authdb">Authentication Database</label><br><br>
   </div>
 
   <div class="switch">
       <label>
         SRV
-        <input type="checkbox" formControlName="srv">
+        <input type="checkbox" name="srv">
         <span class="lever"></span>  
       </label><br><br>
   </div>
