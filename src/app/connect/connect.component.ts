@@ -45,7 +45,8 @@ export class ConnectComponent implements OnInit {
         sessionStorage.username = data['username'];
         sessionStorage.authdb = data['authdb'];
         this.router.navigate(['/dashboard']);
-      });
+      },
+      error => M.toast({html: error.error.errorMsg}));
     }
   }
 }
