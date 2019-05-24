@@ -5,6 +5,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { DatabasesComponent } from './databases/databases.component';
 import { CollectionsComponent } from './collections/collections.component';
 import { ViewCollectionComponent } from './view-collection/view-collection.component';
+import { ErrorComponent } from './error/error.component';
 
 const routes: Routes = [
   {
@@ -22,6 +23,10 @@ const routes: Routes = [
   {
     path: 'databases/:dbName/:collectionName',
     component: ViewCollectionComponent
+  },
+  {
+    path: '**',
+    component: ErrorComponent
   }
 ];
 

@@ -1,6 +1,6 @@
 <h1>Connect to a MongoDB Database</h1>
 
-<form>
+<form [formGroup]="connectForm" (ngSubmit)="connect()">
   <div class="input-field col s6">
     <input type="text" name="host">
     <label for="host">Host</label><br><br>
