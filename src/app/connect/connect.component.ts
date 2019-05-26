@@ -38,7 +38,7 @@ export class ConnectComponent implements OnInit {
       M.toast({html: "Error: All fields are required.", displayLength: 2000});
     }
     else {
-      this.http.post('http://localhost/api/auth/connect', this.connectForm.value).subscribe(data => {
+      this.http.post('http://localhost:8080/api/auth/connect', this.connectForm.value).subscribe(data => {
         sessionStorage.token = data['token'];
         sessionStorage.host = data['host'];
         sessionStorage.port = data['port'];
