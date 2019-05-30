@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-databases',
@@ -14,7 +14,13 @@ export class DatabasesComponent implements OnInit {
   ngOnInit() {
     if(sessionStorage.token == null)
       this.router.navigate(['/']);
-    this.http.get("http://localhost:8080/api/auth/getdbs").subscribe(data => {
+
+    let httpOptions = {
+      headers: new HttpHeaders({
+        'token': sessionStorage.token
+      })
+    };
+    this.http.get("http://localhost:8080/api/auth/getdbs", httpOptions).subscribe(data => {
       this.databases = data;
     });
   }
