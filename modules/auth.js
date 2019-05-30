@@ -93,15 +93,16 @@ module.exports.getDBs = function(req, res) {
             payload = decoded;
             payload.password = decrypt(payload.password);
             var uri = getUri(payload);
-            MongoClient.connect(uri, { useNewUrlParser: true }, function(err2, db) {
-                if(err2)
-                    res.status(500).json(err2);
-                else {
-                    var admin = db.admin();
-                    admin.listDatabases(function(err3, result) {
+            var admin = mongoose.mongo.Admin;
+            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
+            connection.on('open', function() {
+                new admin(connection.db).listDatabases(function(err, result) {
+                    if(err)
+                        res.status(500).json(err);
+                    else {
                         res.status(200).json(result.databases);
-                    });
-                }
+                    }
+                });
             });
         }
     });
