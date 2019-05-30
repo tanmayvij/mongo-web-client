@@ -1,3 +1,8 @@
-<p>
-  collections works!
-</p>
+<h1>{{dbname}}</h1>
+<h4>{{message}}</h4>
+<table class="striped">
+  <tr *ngFor="let col of collections">
+    <a routerLink="/databases/{{dbname}}/{{col.name}}">{{col.name}}</a>
+  </tr>
+</table>
+<br><br>

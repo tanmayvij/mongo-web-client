@@ -9,6 +9,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 })
 export class DatabasesComponent implements OnInit {
   databases: any;
+  message: string = "Loading...";
   constructor(private router: Router, private http: HttpClient) { }
 
   ngOnInit() {
@@ -20,8 +21,11 @@ export class DatabasesComponent implements OnInit {
         'token': sessionStorage.token
       })
     };
-    this.http.get("http://localhost:8080/api/auth/getdbs", httpOptions).subscribe(data => {
+    this.http.get("http://localhost:8080/api/databases", httpOptions).subscribe(data => {
       this.databases = data;
+      this.message = "";
+    }, error => {
+      this.message = "Error: " + error.error.error;
     });
   }
 

@@ -9,3 +9,11 @@ footer
     left: 0;
     right: 0;
 }
+
+header img {
+    cursor: pointer;
+}
+
+header img:active, header img:focus {
+    outline: none;
+}

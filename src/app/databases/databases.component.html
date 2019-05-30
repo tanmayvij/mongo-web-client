@@ -1,7 +1,8 @@
 <h1>Databases</h1>
-
-<ul>
-  <li *ngFor="let db of databases">
-    {{db.name}}
-  </li>
-</ul>
+<h4>{{message}}</h4>
+<table class="striped">
+  <tr *ngFor="let db of databases">
+    <a routerLink="/databases/{{db.name}}">{{db.name}}</a>
+  </tr>
+</table>
+<br><br>
