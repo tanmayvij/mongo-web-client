@@ -12,6 +12,12 @@ router.route('/databases/:dbName')
 .get(client.listCollections);
 
 router.route('/databases/:dbName/:collectionName')
-.get(client.viewCollection);
+.get(client.viewDocuments)
+.post(client.addDocument)
+.delete(client.dropCollection);
+
+router.route('/databases/:dbName/:collectionName/:id')
+.put(client.updateDocument)
+.delete(client.deleteDocument);
 
 module.exports = router;

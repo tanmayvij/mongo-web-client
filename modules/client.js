@@ -143,6 +143,171 @@ module.exports.listCollections = function(req, res) {
     });
 };
 
-module.exports.viewCollection = function(req, res) {
+module.exports.dropCollection = function(req, res) {
+    if(!req.headers.token)
+    {
+        res.status(401).json({"error":"no token provided"});
+        return;
+    }
+    var token = decrypt(req.headers.token);
+    var payload = {};
+    jwt.verify(token, jwtkey, function(err, decoded) {
+        if(err) {
+            res.status(401).json({"error": "bad token"});
+        }
+        else {
+            payload = decoded;
+            payload.password = decrypt(payload.password);
+            payload.db = req.params.dbName;
+            var uri = getUri(payload);
+            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
+            connection.on('open', function() {
+                var collection = connection.db.collection(req.params.collectionName);
+                collection.drop(function(err, success){
+                    if(err) res.status(500).json({"error": err});
+                    else res.status(204).json({"ok": true});
+                });
+            });
+        }
+    });
+};
 
+module.exports.viewDocuments = function(req, res) {
+    if(!req.headers.token)
+    {
+        res.status(401).json({"error":"no token provided"});
+        return;
+    }
+    var token = decrypt(req.headers.token);
+    var payload = {};
+    jwt.verify(token, jwtkey, function(err, decoded) {
+        if(err) {
+            res.status(401).json({"error": "bad token"});
+        }
+        else {
+            payload = decoded;
+            payload.password = decrypt(payload.password);
+            payload.db = req.params.dbName;
+            var uri = getUri(payload);
+            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
+            connection.on('open', function() {
+                var collection = connection.db.collection(req.params.collectionName);
+                collection.find({}).toArray(function(error, result) {
+                    if(error) res.status(500).json({"error": error});
+                    else res.status(200).json(result);
+                });
+            });
+        }
+    });
+};
+
+module.exports.addDocument = function(req, res) {
+    if(!req.headers.token)
+    {
+        res.status(401).json({"error":"no token provided"});
+        return;
+    }
+    if(!IsJsonString(req.body.document))
+    {
+        res.status(400).json({"error": "not a valid JSON object"});
+        return;
+    }
+    var token = decrypt(req.headers.token);
+    var payload = {};
+    var document = JSON.parse(req.body.document);
+    jwt.verify(token, jwtkey, function(err, decoded) {
+        if(err) {
+            res.status(401).json({"error": "bad token"});
+        }
+        else {
+            payload = decoded;
+            payload.password = decrypt(payload.password);
+            payload.db = req.params.dbName;
+            var uri = getUri(payload);
+            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
+            connection.on('open', function() {
+                var collection = connection.db.collection(req.params.collectionName);
+                collection.insertOne(document, function(error, result) {
+                    if(error) res.status(500).json({"error": error});
+                    else res.status(201).json(result);
+                });
+            });
+        }
+    });
+    function IsJsonString(str) {
+        try {
+          var json = JSON.parse(str);
+          return (typeof json === 'object');
+        } catch (e) {
+          return false;
+        }
+      }
+};
+
+module.exports.updateDocument = function(req, res) {
+    if(!req.headers.token)
+    {
+        res.status(401).json({"error":"no token provided"});
+        return;
+    }
+    var token = decrypt(req.headers.token);
+    var payload = {};
+    jwt.verify(token, jwtkey, function(err, decoded) {
+        if(err) {
+            res.status(401).json({"error": "bad token"});
+        }
+        else {
+            payload = decoded;
+            payload.password = decrypt(payload.password);
+            payload.db = req.params.dbName;
+            var uri = getUri(payload);
+            var ObjectId = mongoose.mongo.ObjectID;
+            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
+            connection.on('open', function() {
+                 try {   
+                    var collection = connection.db.collection(req.params.collectionName);
+                    collection.findOneAndUpdate({_id: ObjectId(req.params.id)}, req.body, function(error, result) {
+                        if(error) res.status(500).json({"error": error});
+                        else res.status(204).json();
+                    });
+                 } catch(e) {
+                    res.status(500).json({"error": "some error occurred"});
+                 }
+            });
+        }
+    });
+};
+
+module.exports.deleteDocument = function(req, res) {
+    if(!req.headers.token)
+    {
+        res.status(401).json({"error":"no token provided"});
+        return;
+    }
+    var token = decrypt(req.headers.token);
+    var payload = {};
+    jwt.verify(token, jwtkey, function(err, decoded) {
+        if(err) {
+            res.status(401).json({"error": "bad token"});
+        }
+        else {
+            payload = decoded;
+            payload.password = decrypt(payload.password);
+            payload.db = req.params.dbName;
+            var uri = getUri(payload);
+            var ObjectId = mongoose.mongo.ObjectID;
+            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
+            connection.on('open', function() {
+                 try {   
+                    var collection = connection.db.collection(req.params.collectionName);
+                    collection.findOneAndDelete({_id: ObjectId(req.params.id)}, function(error, result) {
+                        if(error) res.status(500).json({"error": error});
+                        else res.status(204).json();
+                    });
+                 } catch(e) {
+                    res.status(500).json({"error": "some error occurred"});
+                 }
+            });
+        }
+    });
 };
