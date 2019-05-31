@@ -133,10 +133,9 @@ module.exports.listCollections = function(req, res) {
                 connection.db.listCollections().toArray((error, collections) => {
                     if(error)
                         res.status(500).json({"error": error});
-                    else {
-                        res.status(200).json(collections);
-                        connection.close();
-                    }
+                    else res.status(200).json(collections);
+                    
+                    connection.close();
                 });
             });
         }
@@ -167,6 +166,7 @@ module.exports.dropCollection = function(req, res) {
                     if(err) res.status(500).json({"error": err});
                     else res.status(204).json({"ok": true});
                 });
+                connection.close();
             });
         }
     });
@@ -196,6 +196,7 @@ module.exports.viewDocuments = function(req, res) {
                     if(error) res.status(500).json({"error": error});
                     else res.status(200).json(result);
                 });
+                connection.close();
             });
         }
     });
@@ -231,6 +232,7 @@ module.exports.addDocument = function(req, res) {
                     if(error) res.status(500).json({"error": error});
                     else res.status(201).json(result);
                 });
+                connection.close();
             });
         }
     });
@@ -241,7 +243,7 @@ module.exports.addDocument = function(req, res) {
         } catch (e) {
           return false;
         }
-      }
+    }
 };
 
 module.exports.updateDocument = function(req, res) {
@@ -250,8 +252,14 @@ module.exports.updateDocument = function(req, res) {
         res.status(401).json({"error":"no token provided"});
         return;
     }
+    if(!IsJsonString(req.body.document))
+    {
+        res.status(400).json({"error": "not a valid JSON object"});
+        return;
+    }
     var token = decrypt(req.headers.token);
     var payload = {};
+    var document = JSON.parse(req.body.document);
     jwt.verify(token, jwtkey, function(err, decoded) {
         if(err) {
             res.status(401).json({"error": "bad token"});
@@ -266,16 +274,25 @@ module.exports.updateDocument = function(req, res) {
             connection.on('open', function() {
                  try {   
                     var collection = connection.db.collection(req.params.collectionName);
-                    collection.findOneAndUpdate({_id: ObjectId(req.params.id)}, req.body, function(error, result) {
+                    collection.update({_id: ObjectId(req.params.id)}, document, function(error, result) {
                         if(error) res.status(500).json({"error": error});
                         else res.status(204).json();
                     });
                  } catch(e) {
                     res.status(500).json({"error": "some error occurred"});
                  }
+                 connection.close();
             });
         }
     });
+    function IsJsonString(str) {
+        try {
+          var json = JSON.parse(str);
+          return (typeof json === 'object');
+        } catch (e) {
+          return false;
+        }
+    }
 };
 
 module.exports.deleteDocument = function(req, res) {
@@ -307,6 +324,7 @@ module.exports.deleteDocument = function(req, res) {
                  } catch(e) {
                     res.status(500).json({"error": "some error occurred"});
                  }
+                 connection.close();
             });
         }
     });
