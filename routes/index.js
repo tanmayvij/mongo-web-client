@@ -3,7 +3,7 @@ var router = express.Router();
 var client = require('../modules/client');
 
 router.route('/auth/connect')
-.post(client.connect);
+.post(client.connect, client.returnDb);
 
 router.route('/databases')
 .get(client.getDBs);

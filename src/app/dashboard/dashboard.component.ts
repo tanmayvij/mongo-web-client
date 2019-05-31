@@ -17,12 +17,26 @@ export class DashboardComponent implements OnInit {
     this.port = sessionStorage.port;
     this.username = sessionStorage.username;
     this.authdb = sessionStorage.authdb;
-    this.time = '';
   }
 
   ngOnInit() {
     if(sessionStorage.token == null)
       this.router.navigate(['/']);
+
+    let date = new Date();
+    let seconds = (date.getTime() - sessionStorage.timestamp) / 1000;
+    let mins = Math.floor(seconds/60);
+    let secs = Math.floor(seconds%60);
+    let secString = secs < 10 ? '0' + secs : secs;
+    this.time = `${mins}:${secString}`;
+    var _this = this;
+    setInterval(function () {
+      seconds++;
+      let mins = Math.floor(seconds/60);
+      let secs = Math.floor(seconds%60);
+      let secString = secs < 10 ? '0' + secs : secs;
+      _this.time = `${mins}:${secString}`;
+    }, 1000);
   }
   logout()
   {

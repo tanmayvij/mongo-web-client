@@ -11,6 +11,7 @@ declare var M: any;
 })
 export class ConnectComponent implements OnInit {
   connectForm: FormGroup;
+  btntext: string = "Connect";
   constructor(private fb: FormBuilder, private router: Router, private http: HttpClient) {
     this.connectForm = fb.group({
       'host': ['', Validators.required],
@@ -27,8 +28,7 @@ export class ConnectComponent implements OnInit {
       this.router.navigate(['/dashboard']);
   }
   connect()
-  {
-    
+  {    
     if(this.connectForm.controls.host.errors ||
       this.connectForm.controls.port.errors ||
       this.connectForm.controls.username.errors ||
@@ -38,15 +38,21 @@ export class ConnectComponent implements OnInit {
       M.toast({html: "Error: All fields are required.", displayLength: 2000});
     }
     else {
+      this.btntext = "Connecting";
       this.http.post('http://localhost:8080/api/auth/connect', this.connectForm.value).subscribe(data => {
         sessionStorage.token = data['token'];
         sessionStorage.host = data['host'];
         sessionStorage.port = data['port'];
         sessionStorage.username = data['username'];
         sessionStorage.authdb = data['authdb'];
+        let date = new Date;
+        sessionStorage.timestamp = date.getTime();
         this.router.navigate(['/dashboard']);
       },
-      error => M.toast({html: error.error.errorMsg}));
+      error => {
+        this.btntext = "Connect";
+        M.toast({html: error.error.errorMsg})
+      });
     }
   }
 }

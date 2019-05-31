@@ -1,15 +1,14 @@
 var mongoose = require('mongoose');
-var MongoClient = require('mongodb').MongoClient;
 var jwt = require('jsonwebtoken');
 var crypto = require('crypto');
 var jwtkey = 'vhxbvkjlcjvbcvbg';
 var cryptokey = 'vxcvxzszadcxzxcs';
 
-module.exports.connect = function(req, res) {
+module.exports.connect = function(req, res, next) {
     var token = '';
     var uri = getUri(req.body);
-    if(testConn(uri))
-    {
+    mongoose.connect(uri, { useNewUrlParser: true, connectTimeoutMS: 2500 });
+    mongoose.connection.on("connected", function() {
         var payload = {
             'host': req.body.host,
             'port': req.body.port,
@@ -28,29 +27,27 @@ module.exports.connect = function(req, res) {
             'authdb': req.body.authdb,
             'error': false,
             'errorMsg': ''
-        }
-        res.status(200).json(result)
-    }
-    else {
+        };
+        mongoose.connection.close();
+        req.status = 200;
+        req.result = result;
+        next();
+    });
+    mongoose.connection.on("error", function(err) {
         result = {
             'error': true,
             'errorMsg': 'Error: Could not connect to the given host.'
         }
-        res.status(400).json(result)
-    }
+        mongoose.connection.close();
+        req.status = 400;
+        req.result = result;
+        next();
+    });
 };
 
-function testConn(uri) {
-    mongoose.connect(uri, { useNewUrlParser: true });
-    mongoose.connection.on('error', function(err) {
-        console.log(err);
-        return false;
-    });
-    mongoose.connection.on('connected', function() {
-        mongoose.connection.close();
-    });
-    return true;
-}
+module.exports.returnDb = function(req, res) {
+    res.status(req.status).json(req.result);
+};
 
 function getUri(params)
 {
@@ -106,6 +103,7 @@ module.exports.getDBs = function(req, res) {
                         res.status(500).json(err);
                     else {
                         res.status(200).json(result.databases);
+                        connection.close();
                     }
                 });
             });
@@ -137,6 +135,7 @@ module.exports.listCollections = function(req, res) {
                         res.status(500).json({"error": error});
                     else {
                         res.status(200).json(collections);
+                        connection.close();
                     }
                 });
             });
