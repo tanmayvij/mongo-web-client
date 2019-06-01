@@ -28,14 +28,26 @@ export class DashboardComponent implements OnInit {
     let mins = Math.floor(seconds/60);
     let secs = Math.floor(seconds%60);
     let secString = secs < 10 ? '0' + secs : secs;
-    this.time = `${mins}:${secString}`;
+    if (mins > 60) {
+      let hours = Math.floor(mins/60);
+      mins = Math.floor(mins%60);
+      let minString = mins < 10 ? '0' + mins : mins;
+      this.time = `${hours}:${minString}:${secString}`;
+    }
+    else { this.time = `${mins}:${secString}`; }
     var _this = this;
     setInterval(function () {
       seconds++;
       let mins = Math.floor(seconds/60);
       let secs = Math.floor(seconds%60);
       let secString = secs < 10 ? '0' + secs : secs;
-      _this.time = `${mins}:${secString}`;
+      if (mins > 60) {
+        let hours = Math.floor(mins/60);
+        mins = Math.floor(mins%60);
+        let minString = mins < 10 ? '0' + mins : mins;
+        _this.time = `${hours}:${minString}:${secString}`;
+      }
+      else { _this.time = `${mins}:${secString}`; }
     }, 1000);
   }
   logout()
