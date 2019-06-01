@@ -23,7 +23,7 @@ export class CollectionsComponent implements OnInit {
         'token': sessionStorage.token
       })
     };
-    this.http.get(`http://localhost:8080/api/databases/${this.dbname}`, httpOptions).subscribe(data => {
+    this.http.get(`/api/databases/${this.dbname}`, httpOptions).subscribe(data => {
       this.collections = data;
       console.log(data)
       this.message = "";

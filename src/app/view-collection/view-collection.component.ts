@@ -45,7 +45,7 @@ export class ViewCollectionComponent implements OnInit {
         'token': sessionStorage.token
       })
     };
-    this.http.get(`http://localhost:8080/api/databases/${this.dbname}/${this.collectionname}`, httpOptions).subscribe(data => {
+    this.http.get(`/api/databases/${this.dbname}/${this.collectionname}`, httpOptions).subscribe(data => {
       this.message = "";
       this.documents = data;
       for(let doc of this.documents)
@@ -67,7 +67,7 @@ export class ViewCollectionComponent implements OnInit {
       })
     };
     if(confirm("Are you sure you want to drop the entire collection?")) {
-      this.http.delete(`http://localhost:8080/api/databases/${this.dbname}/${this.collectionname}`, httpOptions).subscribe(data => {
+      this.http.delete(`/api/databases/${this.dbname}/${this.collectionname}`, httpOptions).subscribe(data => {
         this.router.navigate([`/databases/${this.dbname}`]);
       }, error => {
         this.message = "Error: " + error.error.error;
@@ -144,7 +144,7 @@ export class ViewCollectionComponent implements OnInit {
       })
     };
     this.message = "Deleting..."
-    this.http.delete(`http://localhost:8080/api/databases/${this.dbname}/${this.collectionname}/${id}`,
+    this.http.delete(`/api/databases/${this.dbname}/${this.collectionname}/${id}`,
       httpOptions)
       .subscribe(data => {
         this.ngOnInit();
@@ -163,7 +163,7 @@ export class ViewCollectionComponent implements OnInit {
         'token': sessionStorage.token
       })
     };
-    let url = `http://localhost:8080/api/databases/${this.dbname}/${this.collectionname}/${id}`;
+    let url = `/api/databases/${this.dbname}/${this.collectionname}/${id}`;
     console.log(url, this.updateForm.value);
     this.http.put(url, this.updateForm.value, httpOptions).subscribe(data => {
       M.toast({html: "Saved successfully."});
@@ -184,7 +184,7 @@ export class ViewCollectionComponent implements OnInit {
         'token': sessionStorage.token
       })
     };
-    let url = `http://localhost:8080/api/databases/${this.dbname}/${this.collectionname}`;
+    let url = `/api/databases/${this.dbname}/${this.collectionname}`;
     this.http.post(url, this.insertForm.value, httpOptions).subscribe(data => {
       this.ngOnInit();
       M.toast({html: "Inserted successfully."});

@@ -21,7 +21,7 @@ export class DatabasesComponent implements OnInit {
         'token': sessionStorage.token
       })
     };
-    this.http.get("http://localhost:8080/api/databases", httpOptions).subscribe(data => {
+    this.http.get("/api/databases", httpOptions).subscribe(data => {
       this.databases = data;
       this.message = "";
     }, error => {
