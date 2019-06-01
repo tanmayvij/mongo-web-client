@@ -28,7 +28,7 @@ export class DashboardComponent implements OnInit {
     let mins = Math.floor(seconds/60);
     let secs = Math.floor(seconds%60);
     let secString = secs < 10 ? '0' + secs : secs;
-    if (mins > 60) {
+    if (mins >= 60) {
       let hours = Math.floor(mins/60);
       mins = Math.floor(mins%60);
       let minString = mins < 10 ? '0' + mins : mins;
@@ -41,7 +41,7 @@ export class DashboardComponent implements OnInit {
       let mins = Math.floor(seconds/60);
       let secs = Math.floor(seconds%60);
       let secString = secs < 10 ? '0' + secs : secs;
-      if (mins > 60) {
+      if (mins >= 60) {
         let hours = Math.floor(mins/60);
         mins = Math.floor(mins%60);
         let minString = mins < 10 ? '0' + mins : mins;
