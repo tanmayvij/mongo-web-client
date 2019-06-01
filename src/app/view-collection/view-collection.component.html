@@ -1,4 +1,41 @@
-<button class="" (click)="drop()" type="button">Drop Collection</button>
+<button class="waves-effect waves-light btn" (click)="insertClicked=true" type="button">
+    <i class="material-icons left">add</i>
+    Insert Document
+</button>
+<button style="float: right" class="waves-effect waves-light red btn" (click)="drop()" type="button">
+    <i class="material-icons left">delete</i>
+    Drop Collection
+</button>
+<form class="modal" [style.display]="insertClicked ? 'block' : 'none'" (ngSubmit)="insert()" [formGroup]="insertForm">
+        <div class="modal-content">
+            <span class="close" (click)="insertClicked=false">&times;</span>
+            <h4>Please enter a valid JSON Object to insert</h4>
+            <textarea formControlName="document" style="height: 250px;" cols="40"></textarea>
+            <div align="center">
+                <button class="btn-floating btn-large waves-effect waves-light" type="submit">
+                    <i class="material-icons">save</i>
+                </button>
+            </div><br><br>
+        </div>
+</form>
 <br><br>
 {{message}}
 
+<table class="striped">
+    <tr *ngFor="let doc of documents">
+        <td width="80%">
+            <pre [innerHTML]="toStr(doc, 0) | safeHtml" style="overflow:hidden" *ngIf="!isView[doc._id]"></pre>
+            <pre [innerHTML]="toStr(doc, 1) | safeHtml" style="overflow:scroll" *ngIf="isView[doc._id]"></pre>
+            <form (ngSubmit)="update(doc._id)" [formGroup]="updateForm" *ngIf="isEdit[doc._id]">
+                <textarea [(ngModel)]="tempDoc" formControlName="document" style="height: 300px;" cols="40"></textarea>
+                <button type="submit" class="btn-floating btn-large waves-effect waves-light"><i class="material-icons">save</i></button>
+            </form>
+        </td>
+        <td style="position: absolute;" width="20%">
+            <button *ngIf="!isView[doc._id]" (click)="expandToggle(doc._id)" type="button" class="btn"><i class="material-icons">expand_more</i></button>
+            <button *ngIf="isView[doc._id]" (click)="expandToggle(doc._id)" type="button" class="btn"><i class="material-icons">expand_less</i></button>&nbsp;&nbsp;
+            <button (click)="editToggle(doc)" type="button" class="btn"><i class="material-icons">edit</i></button>&nbsp;&nbsp;
+            <button (click)="delete(doc._id)" type="button" class="btn red"><i class="material-icons">delete</i></button>
+        </td><br><br>
+    </tr>
+</table>

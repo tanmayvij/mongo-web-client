@@ -10,6 +10,7 @@ import { CollectionsComponent } from './collections/collections.component';
 import { ViewCollectionComponent } from './view-collection/view-collection.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ErrorComponent } from './error/error.component';
+import { SafeHtmlPipe } from "./safehtml.pipe";
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { ErrorComponent } from './error/error.component';
     CollectionsComponent,
     ViewCollectionComponent,
     DashboardComponent,
-    ErrorComponent
+    ErrorComponent,
+    SafeHtmlPipe
   ],
   imports: [
     BrowserModule,
