@@ -4,7 +4,7 @@ const path = require("path");
 const bodyParser = require('body-parser');
 const routes = require('./routes');
 
-app.set('port', process.env.port ? process.env.port :8080);
+app.set('port', process.env.PORT ? process.env.PORT : 8080);
 
 app.use(function(req, res, next) {
   if (!req.secure && req.get('x-forwarded-proto') !== 'https' && process.env.NODE_ENV !== "development") {
