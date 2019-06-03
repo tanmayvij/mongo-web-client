@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { FormGroup, FormBuilder } from '@angular/forms';
 
 @Component({
   selector: 'app-databases',
@@ -10,7 +11,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 export class DatabasesComponent implements OnInit {
   databases: any;
   message: string = "Loading...";
-  constructor(private router: Router, private http: HttpClient) { }
+  createForm: FormGroup;
+
+  constructor(private fb: FormBuilder, private router: Router, private http: HttpClient) {
+    this.createForm = fb.group({
+      'name': ['']
+    });
+  }
 
   ngOnInit() {
     if(sessionStorage.token == null)
@@ -28,6 +35,10 @@ export class DatabasesComponent implements OnInit {
       this.message = "Error: " + error.error.error;
     });
   }
-
+  
+  createDB()
+  {
+    this.router.navigate(['/databases/' + this.createForm.controls.name.value]);
+  }
 
 }

@@ -165,8 +165,8 @@ module.exports.dropCollection = function(req, res) {
                 collection.drop(function(err, success){
                     if(err) res.status(500).json({"error": err});
                     else res.status(204).json({"ok": true});
+                    connection.close();
                 });
-                connection.close();
             });
         }
     });
@@ -195,8 +195,8 @@ module.exports.viewDocuments = function(req, res) {
                 collection.find({}).toArray(function(error, result) {
                     if(error) res.status(500).json({"error": error});
                     else res.status(200).json(result);
+                    connection.close();
                 });
-                connection.close();
             });
         }
     });
@@ -231,8 +231,8 @@ module.exports.addDocument = function(req, res) {
                 collection.insertOne(document, function(error, result) {
                     if(error) res.status(500).json({"error": error});
                     else res.status(201).json(result);
+                    connection.close();
                 });
-                connection.close();
             });
         }
     });
@@ -277,11 +277,12 @@ module.exports.updateDocument = function(req, res) {
                     collection.update({_id: ObjectId(req.params.id)}, document, function(error, result) {
                         if(error) res.status(500).json({"error": error});
                         else res.status(204).json();
+                        connection.close();
                     });
                  } catch(e) {
                     res.status(500).json({"error": "some error occurred"});
+                    connection.close();
                  }
-                 connection.close();
             });
         }
     });
@@ -320,11 +321,51 @@ module.exports.deleteDocument = function(req, res) {
                     collection.findOneAndDelete({_id: ObjectId(req.params.id)}, function(error, result) {
                         if(error) res.status(500).json({"error": error});
                         else res.status(204).json();
+                        connection.close();
                     });
                  } catch(e) {
                     res.status(500).json({"error": "some error occurred"});
+                    connection.close();
                  }
-                 connection.close();
+            });
+        }
+    });
+};
+
+module.exports.createCollection = function(req, res) {
+    if(!req.headers.token)
+    {
+        res.status(401).json({"error":"no token provided"});
+        return;
+    }
+    if(!req.body.collection)
+    {
+        res.status(400).json({"error":"collection name is required"});
+        return;
+    }
+    var token = decrypt(req.headers.token);
+    var payload = {};
+    jwt.verify(token, jwtkey, function(err, decoded) {
+        if(err) {
+            res.status(401).json({"error": "bad token"});
+        }
+        else {
+            payload = decoded;
+            payload.password = decrypt(payload.password);
+            payload.db = req.params.dbName;
+            var uri = getUri(payload);
+            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
+            connection.on('open', function() {
+                 try {   
+                    connection.db.createCollection(req.body.collection, function(error, result) {
+                        if(error) res.status(500).json({"error": error});
+                        else res.status(201).json({"success": true});
+                        connection.close();
+                    });
+                 } catch(e) {
+                    res.status(500).json({"error": "some error occurred"});
+                    connection.close();
+                 }
             });
         }
     });

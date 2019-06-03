@@ -1,4 +1,14 @@
 <h1>{{dbname}}</h1>
+<form (ngSubmit)="createCollection()" [formGroup]="createForm">
+  <div class="input-field col s6">
+    <input name="name" type="text" formControlName="name" required>
+    <label for="name">Create new collection...</label>
+  </div>
+  <button type="submit" class="waves-effect waves-light btn">
+    <i class="material-icons left">add</i>
+    Create
+  </button>
+</form><br>
 <h4>{{message}}</h4>
 <table class="striped">
   <tr *ngFor="let col of collections">

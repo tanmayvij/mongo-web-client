@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const path = require("path");
 const bodyParser = require('body-parser');
-const routes = require('./routes');
+const modules = require('./modules');
 
 app.set('port', process.env.PORT ? process.env.PORT : 8080);
 
@@ -23,7 +23,7 @@ app.use(function(req, res, next) {
 });
 app.use(bodyParser.json({ limit: '5mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
-app.use('/api', routes);
+app.use('/api', modules);
 app.use('/', express.static(path.join(__dirname, 'public')));
 app.use('/', (req, res) => {
 	res.sendFile(__dirname + '/public/index.html');
