@@ -1,34 +1,39 @@
-const express = require('express');
-const app = express();
-const path = require("path");
 const bodyParser = require('body-parser');
-const modules = require('./modules');
+const cors = require('cors');
+const express = require('express');
+const morgan = require('morgan');
+const path = require("path");
 
-app.set('port', process.env.PORT ? process.env.PORT : 8080);
+const port = process.env.PORT || 8080;
+const routes = require('./modules');
 
-app.use(function(req, res, next) {
+const app = express();
+
+app.use(bodyParser.json({ limit: '5mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
+
+app.set('cryptoSecret', 'vxcvxzszadcxzxcs');
+app.set('tokenSecret', 'vhxbvkjlcjvbcvbg');
+
+app.use(cors());
+app.use(morgan('dev'));
+
+app.use(function (req, res, next) {
   if (!req.secure && req.get('x-forwarded-proto') !== 'https' && process.env.NODE_ENV !== "development") {
     return res.redirect('https://' + req.get('host') + req.url);
   }
   next();
 });
 
-app.use(function(req, res, next) {
-	console.log(req.method, req.url);
-	res.setHeader('Access-Control-Allow-Origin', '*');
-	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE,OPTIONS');
-	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,x-access-token,Authorization,token');
-	res.setHeader('Access-Control-Allow-Credentials', true);
-	next();
-});
-app.use(bodyParser.json({ limit: '5mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
-app.use('/api', modules);
-app.use('/', express.static(path.join(__dirname, 'public')));
+app.use('/api', routes);
+
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', (req, res) => {
-	res.sendFile(__dirname + '/public/index.html');
+  res.sendFile(__dirname + '/public/index.html');
 });
 
-var server = app.listen(app.get('port'), function() {
-	console.log(server.address());
+app.listen(port, function () {
+  console.log("Listening on port " + port);
 });
+
+module.exports = app;
