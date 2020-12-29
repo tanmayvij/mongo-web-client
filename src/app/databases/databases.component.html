@@ -13,6 +13,12 @@
 <table class="striped">
   <tr *ngFor="let db of databases">
     <a routerLink="/databases/{{db.name}}">{{db.name}}</a>
+    <button type="button" class="waves-effect waves-light red btn right" (click)="drop(db.name)">
+      <i class="material-icons">delete</i>
+    </button>
+    <!--button type="button" class="waves-effect waves-light btn right" style="margin-right: 10px;" (click)="rename(db.name, 'newName')">
+      <i class="material-icons">edit</i>
+    </button-->
   </tr>
 </table>
 <br><br>

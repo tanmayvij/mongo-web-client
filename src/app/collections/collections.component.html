@@ -1,18 +1,49 @@
 <h1>{{dbname}}</h1>
-<form (ngSubmit)="createCollection()" [formGroup]="createForm">
-  <div class="input-field col s6">
-    <input name="name" type="text" formControlName="name" required>
-    <label for="name">Create new collection...</label>
-  </div>
-  <button type="submit" class="waves-effect waves-light btn">
-    <i class="material-icons left">add</i>
-    Create
+<div class="row">
+  <form (ngSubmit)="createCollection()" [formGroup]="createForm" class="col-md-6">
+    <div class="input-field">
+      <input name="name" type="text" formControlName="name" required>
+      <label for="name">Create new collection...</label>
+    </div>
+    <button type="submit" class="waves-effect waves-light btn">
+      <i class="material-icons left">add</i>
+      Create
+    </button>
+  </form>
+  <button type="button" class="waves-effect waves-light red btn right col-md-6" (click)="dropDb()">
+    <i class="material-icons left">delete</i>
+    Drop Database
   </button>
-</form><br>
+</div>
+<br>
 <h4>{{message}}</h4>
 <table class="striped">
   <tr *ngFor="let col of collections">
-    <a routerLink="/databases/{{dbname}}/{{col.name}}">{{col.name}}</a>
+
+    <a [style.display]="col.editClicked && 'none'" routerLink="/databases/{{dbname}}/{{col.name}}">{{col.name}}</a>
+    <input
+    type="text"
+    [style.display]="col.editClicked ? 'block' : 'none'"
+    style="width: 250px; margin-left: 40px;"
+    value="{{col.name}}"
+    (keyup)="onKey($event)">
+    <button
+    type="button"
+    [style.display]="col.editClicked ? 'block' : 'none'"
+    style=" margin-left: 40px;"
+    class="waves-effect waves-light btn"
+    (click)="rename(col.name)">
+      <i class="material-icons">save</i>
+    </button>
+
+    <span [style.display]="col.editClicked && 'none'">
+      <button type="button" class="waves-effect waves-light red btn right" (click)="drop(col.name)">
+        <i class="material-icons">delete</i>
+      </button>
+      <button type="button" class="waves-effect waves-light btn right" style="margin-right: 10px;" (click)="col.editClicked = true">
+        <i class="material-icons">edit</i>
+      </button>
+    </span>
   </tr>
 </table>
 <br><br>

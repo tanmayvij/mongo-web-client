@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const path = require("path");
@@ -7,7 +8,7 @@ const modules = require('./modules');
 app.set('port', process.env.PORT ? process.env.PORT : 8080);
 
 app.use(function(req, res, next) {
-  if (!req.secure && req.get('x-forwarded-proto') !== 'https' && process.env.NODE_ENV !== "development") {
+  if (!req.secure && req.get('x-forwarded-proto') !== 'https' && process.env.NODE_ENV === "production") {
     return res.redirect('https://' + req.get('host') + req.url);
   }
   next();

@@ -41,4 +41,36 @@ export class DatabasesComponent implements OnInit {
     this.router.navigate(['/databases/' + this.createForm.controls.name.value]);
   }
 
+  drop(db)
+  {
+    let httpOptions = {
+      headers: new HttpHeaders({
+        'token': sessionStorage.token
+      })
+    };
+    if(confirm("Are you sure you want to drop the entire database?")) {
+      this.http.delete(`/api/databases/${db}`, httpOptions).subscribe(data => {
+        this.ngOnInit();
+      }, error => {
+        this.message = "Error: " + error.error.error;
+      });
+    }
+  }
+
+  rename(oldName, newName) {
+    if(sessionStorage.token == null)
+      this.router.navigate(['/']);
+
+    let httpOptions = {
+      headers: new HttpHeaders({
+        'token': sessionStorage.token
+      })
+    };
+    this.http.put(`/api/databases/${oldName}`,{ newName }, httpOptions).subscribe(data => {
+      this.ngOnInit();
+    }, error => {
+      this.message = "Error: " + error.error.error;
+    });
+  }
+
 }

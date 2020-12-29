@@ -1,6 +1,6 @@
-var express = require('express');
-var router = express.Router();
-var client = require('./client');
+const express = require('express');
+const router = express.Router();
+const client = require('./client');
 
 router.route('/auth/connect')
 .post(client.connect, client.returnDb);
@@ -10,11 +10,14 @@ router.route('/databases')
 
 router.route('/databases/:dbName')
 .get(client.listCollections)
-.post(client.createCollection);
+.post(client.createCollection)
+.put(client.renameDb)
+.delete(client.dropDb);
 
 router.route('/databases/:dbName/:collectionName')
 .get(client.viewDocuments)
 .post(client.addDocument)
+.put(client.renameCollection)
 .delete(client.dropCollection);
 
 router.route('/databases/:dbName/:collectionName/:id')
