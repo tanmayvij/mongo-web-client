@@ -1,24 +1,30 @@
-var express = require('express');
-var router = express.Router();
-var client = require('./client');
+const { Router: er } = require('express');
+const router = er();
 
+const client = require('./client');
+const tokenVerify = require('./tokenVerify');
+
+// DB Connect
+const connect = require('./connect');
 router.route('/auth/connect')
-.post(client.connect, client.returnDb);
+  .post(connect);
+
+router.use(tokenVerify);
 
 router.route('/databases')
-.get(client.getDBs);
+  .get(client.getDBs);
 
 router.route('/databases/:dbName')
-.get(client.listCollections)
-.post(client.createCollection);
+  .get(client.listCollections)
+  .post(client.createCollection);
 
 router.route('/databases/:dbName/:collectionName')
-.get(client.viewDocuments)
-.post(client.addDocument)
-.delete(client.dropCollection);
+  .get(client.viewDocuments)
+  .post(client.addDocument)
+  .delete(client.dropCollection);
 
 router.route('/databases/:dbName/:collectionName/:id')
-.put(client.updateDocument)
-.delete(client.deleteDocument);
+  .put(client.updateDocument)
+  .delete(client.deleteDocument);
 
 module.exports = router;

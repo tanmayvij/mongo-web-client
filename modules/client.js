@@ -1,372 +1,154 @@
-var mongoose = require('mongoose');
-var jwt = require('jsonwebtoken');
-var crypto = require('crypto');
-var jwtkey = 'vhxbvkjlcjvbcvbg';
-var cryptokey = 'vxcvxzszadcxzxcs';
+const mongoose = require('mongoose');
 
-module.exports.connect = function(req, res, next) {
-    var token = '';
-    var uri = getUri(req.body);
-    mongoose.connect(uri, { useNewUrlParser: true, connectTimeoutMS: 2500 });
-    mongoose.connection.on("connected", function() {
-        var payload = {
-            'host': req.body.host,
-            'port': req.body.port,
-            'username': req.body.username,
-            'authdb': req.body.authdb,
-            'password': encrypt(req.body.password),
-            'srv': req.body.srv
-        };
-        token = jwt.sign(payload, jwtkey, {expiresIn: 3600*24});
-        token = encrypt(token);
-        result = {
-            'token': token,
-            'host': req.body.host,
-            'port': req.body.port,
-            'username': req.body.username,
-            'authdb': req.body.authdb,
-            'error': false,
-            'errorMsg': ''
-        };
-        mongoose.connection.close();
-        req.status = 200;
-        req.result = result;
-        next();
-    });
-    mongoose.connection.on("error", function(err) {
-        result = {
-            'error': true,
-            'errorMsg': 'Error: Could not connect to the given host.'
-        }
-        mongoose.connection.close();
-        req.status = 400;
-        req.result = result;
-        next();
-    });
-};
+const getUri = require('./getURI');
 
-module.exports.returnDb = function(req, res) {
-    res.status(req.status).json(req.result);
-};
-
-function getUri(params)
-{
-    var uri = 'mongodb';
-    var db = params.db ? params.db : 'mongocat';
-    if(params.srv)
-    {
-        uri+='+srv';
-        uri+=`://${params.username}:${params.password}@${params.host}/${db}?authSource=${params.authdb}`;
-    }
-    else
-    {
-        uri+=`://${params.username}:${params.password}@${params.host}:${params.port}/${db}?authSource=${params.authdb}`;
-    }
-    return uri;
+function IsJsonString(str) {
+  try {
+    var json = JSON.parse(str);
+    return (typeof json === 'object');
+  } catch (e) {
+    return false;
+  }
 }
 
-function encrypt(text) {
-    var cipher = crypto.createCipher('aes-256-cbc', cryptokey);
-    var encrypted = cipher.update(text, "utf8", "hex");
-    encrypted += cipher.final("hex");
-    return encrypted;
-}
+module.exports.getDBs = async function (req, res) {
+  try {
+    let payload = req.formPayload();
+    let uri = getUri(payload);
+    let connection = await mongoose.createConnection(uri, { useNewUrlParser: true });
+    let admin = mongoose.mongo.Admin;
 
-function decrypt(cipher) {
-    var decipher = crypto.createDecipher('aes-256-cbc', cryptokey);
-    var decrypted = decipher.update(cipher, 'hex', 'utf8');
-    decrypted += decipher.final("utf8");
-    return decrypted;
-}
+    let result = await new admin(connection.db).listDatabases();
 
-module.exports.getDBs = function(req, res) {
-    if(!req.headers.token)
-    {
-        res.status(401).json({"error":"no token provided"});
-        return;
-    }
-    var token = decrypt(req.headers.token);
-    var payload = {};
-    jwt.verify(token, jwtkey, function(err, decoded) {
-        if(err) {
-            res.status(401).json({"error": "bad token"});
-        }
-        else {
-            payload = decoded;
-            payload.password = decrypt(payload.password);
-            var uri = getUri(payload);
-            var admin = mongoose.mongo.Admin;
-            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
-            connection.on('open', function() {
-                new admin(connection.db).listDatabases(function(err, result) {
-                    if(err)
-                        res.status(500).json(err);
-                    else {
-                        res.status(200).json(result.databases);
-                        connection.close();
-                    }
-                });
-            });
-        }
-    });
+    res.status(200).json(result.databases);
+
+    return await connection.close();
+  } catch (err) {
+    return res.status(500).json(err);
+  }
 };
 
-module.exports.listCollections = function(req, res) {
-    if(!req.headers.token)
-    {
-        res.status(401).json({"error":"no token provided"});
-        return;
-    }
-    var token = decrypt(req.headers.token);
-    var payload = {};
-    jwt.verify(token, jwtkey, function(err, decoded) {
-        if(err) {
-            res.status(401).json({"error": "bad token"});
-        }
-        else {
-            payload = decoded;
-            payload.password = decrypt(payload.password);
-            payload.db = req.params.dbName;
-            var uri = getUri(payload);
-            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
-            connection.on('open', function() {
-                connection.db.listCollections().toArray((error, collections) => {
-                    if(error)
-                        res.status(500).json({"error": error});
-                    else res.status(200).json(collections);
-                    
-                    connection.close();
-                });
-            });
-        }
-    });
+module.exports.listCollections = async function (req, res) {
+  try {
+    let payload = req.formPayload(req.params.dbName);
+    let uri = getUri(payload);
+    let connection = await mongoose.createConnection(uri, { useNewUrlParser: true });
+    let collections = await connection.db.listCollections().toArray();
+
+    res.status(200).json(collections);
+
+    return await connection.close();
+  } catch (err) {
+    return res.status(500).json({ "error": err });
+  }
 };
 
-module.exports.dropCollection = function(req, res) {
-    if(!req.headers.token)
-    {
-        res.status(401).json({"error":"no token provided"});
-        return;
-    }
-    var token = decrypt(req.headers.token);
-    var payload = {};
-    jwt.verify(token, jwtkey, function(err, decoded) {
-        if(err) {
-            res.status(401).json({"error": "bad token"});
-        }
-        else {
-            payload = decoded;
-            payload.password = decrypt(payload.password);
-            payload.db = req.params.dbName;
-            var uri = getUri(payload);
-            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
-            connection.on('open', function() {
-                var collection = connection.db.collection(req.params.collectionName);
-                collection.drop(function(err, success){
-                    if(err) res.status(500).json({"error": err});
-                    else res.status(204).json({"ok": true});
-                    connection.close();
-                });
-            });
-        }
-    });
+module.exports.dropCollection = async function (req, res) {
+  try {
+    let payload = req.formPayload(req.params.dbName);
+    let uri = getUri(payload);
+    let connection = await mongoose.createConnection(uri, { useNewUrlParser: true });
+    let collection = connection.db.collection(req.params.collectionName);
+
+    await collection.drop();
+
+    res.status(204).json({ "ok": true });
+
+    return await connection.close();
+  } catch (err) {
+    return res.status(500).json({ "error": err });
+  }
 };
 
-module.exports.viewDocuments = function(req, res) {
-    if(!req.headers.token)
-    {
-        res.status(401).json({"error":"no token provided"});
-        return;
-    }
-    var token = decrypt(req.headers.token);
-    var payload = {};
-    jwt.verify(token, jwtkey, function(err, decoded) {
-        if(err) {
-            res.status(401).json({"error": "bad token"});
-        }
-        else {
-            payload = decoded;
-            payload.password = decrypt(payload.password);
-            payload.db = req.params.dbName;
-            var uri = getUri(payload);
-            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
-            connection.on('open', function() {
-                var collection = connection.db.collection(req.params.collectionName);
-                collection.find({}).toArray(function(error, result) {
-                    if(error) res.status(500).json({"error": error});
-                    else res.status(200).json(result);
-                    connection.close();
-                });
-            });
-        }
-    });
+module.exports.viewDocuments = async function (req, res) {
+  try {
+    let payload = req.formPayload(req.params.dbName);
+    let uri = getUri(payload);
+    let connection = await mongoose.createConnection(uri, { useNewUrlParser: true });
+    let collection = connection.db.collection(req.params.collectionName);
+
+    let result = await collection.find({}).toArray();
+
+    res.status(200).json(result);
+
+    return await connection.close();
+  } catch (err) {
+    res.status(500).json({ "error": err });
+  }
 };
 
-module.exports.addDocument = function(req, res) {
-    if(!req.headers.token)
-    {
-        res.status(401).json({"error":"no token provided"});
-        return;
-    }
-    if(!IsJsonString(req.body.document))
-    {
-        res.status(400).json({"error": "not a valid JSON object"});
-        return;
-    }
-    var token = decrypt(req.headers.token);
-    var payload = {};
-    var document = JSON.parse(req.body.document);
-    jwt.verify(token, jwtkey, function(err, decoded) {
-        if(err) {
-            res.status(401).json({"error": "bad token"});
-        }
-        else {
-            payload = decoded;
-            payload.password = decrypt(payload.password);
-            payload.db = req.params.dbName;
-            var uri = getUri(payload);
-            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
-            connection.on('open', function() {
-                var collection = connection.db.collection(req.params.collectionName);
-                collection.insertOne(document, function(error, result) {
-                    if(error) res.status(500).json({"error": error});
-                    else res.status(201).json(result);
-                    connection.close();
-                });
-            });
-        }
-    });
-    function IsJsonString(str) {
-        try {
-          var json = JSON.parse(str);
-          return (typeof json === 'object');
-        } catch (e) {
-          return false;
-        }
-    }
+module.exports.addDocument = async function (req, res) {
+  try {
+    if (!IsJsonString(req.body.document))
+      return res.status(400).json({ "error": "not a valid JSON object" });
+
+    let payload = req.formPayload(req.params.dbName);
+    let uri = getUri(payload);
+    let connection = await mongoose.createConnection(uri, { useNewUrlParser: true });
+    let collection = connection.db.collection(req.params.collectionName);
+
+    let result = await collection.insertOne(document);
+
+    res.status(201).json(result);
+
+    return await connection.close();
+  } catch (err) {
+    return res.status(500).json({ "error": error });
+  }
 };
 
-module.exports.updateDocument = function(req, res) {
-    if(!req.headers.token)
-    {
-        res.status(401).json({"error":"no token provided"});
-        return;
-    }
-    if(!IsJsonString(req.body.document))
-    {
-        res.status(400).json({"error": "not a valid JSON object"});
-        return;
-    }
-    var token = decrypt(req.headers.token);
-    var payload = {};
-    var document = JSON.parse(req.body.document);
-    jwt.verify(token, jwtkey, function(err, decoded) {
-        if(err) {
-            res.status(401).json({"error": "bad token"});
-        }
-        else {
-            payload = decoded;
-            payload.password = decrypt(payload.password);
-            payload.db = req.params.dbName;
-            var uri = getUri(payload);
-            var ObjectId = mongoose.mongo.ObjectID;
-            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
-            connection.on('open', function() {
-                 try {   
-                    var collection = connection.db.collection(req.params.collectionName);
-                    collection.update({_id: ObjectId(req.params.id)}, document, function(error, result) {
-                        if(error) res.status(500).json({"error": error});
-                        else res.status(204).json();
-                        connection.close();
-                    });
-                 } catch(e) {
-                    res.status(500).json({"error": "some error occurred"});
-                    connection.close();
-                 }
-            });
-        }
-    });
-    function IsJsonString(str) {
-        try {
-          var json = JSON.parse(str);
-          return (typeof json === 'object');
-        } catch (e) {
-          return false;
-        }
-    }
+module.exports.updateDocument = async function (req, res) {
+  try {
+    if (!IsJsonString(req.body.document))
+      return res.status(400).json({ "error": "not a valid JSON object" });
+
+    let payload = req.formPayload(req.params.dbName);
+    let uri = getUri(payload);
+    let connection = await mongoose.createConnection(uri, { useNewUrlParser: true });
+    let collection = connection.db.collection(req.params.collectionName);
+
+    await collection.updateOne({ _id: ObjectId(req.params.id) }, document);
+
+    res.status(204).json();
+
+    return await connection.close();
+  } catch (err) {
+    return res.status(500).json({ "error": err });
+  }
 };
 
-module.exports.deleteDocument = function(req, res) {
-    if(!req.headers.token)
-    {
-        res.status(401).json({"error":"no token provided"});
-        return;
-    }
-    var token = decrypt(req.headers.token);
-    var payload = {};
-    jwt.verify(token, jwtkey, function(err, decoded) {
-        if(err) {
-            res.status(401).json({"error": "bad token"});
-        }
-        else {
-            payload = decoded;
-            payload.password = decrypt(payload.password);
-            payload.db = req.params.dbName;
-            var uri = getUri(payload);
-            var ObjectId = mongoose.mongo.ObjectID;
-            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
-            connection.on('open', function() {
-                 try {   
-                    var collection = connection.db.collection(req.params.collectionName);
-                    collection.findOneAndDelete({_id: ObjectId(req.params.id)}, function(error, result) {
-                        if(error) res.status(500).json({"error": error});
-                        else res.status(204).json();
-                        connection.close();
-                    });
-                 } catch(e) {
-                    res.status(500).json({"error": "some error occurred"});
-                    connection.close();
-                 }
-            });
-        }
-    });
+module.exports.deleteDocument = async function (req, res) {
+  try {
+    let payload = req.formPayload(req.params.dbName);
+    let uri = getUri(payload);
+    let connection = await mongoose.createConnection(uri, { useNewUrlParser: true });
+    let collection = connection.db.collection(req.params.collectionName);
+
+    await collection.findOneAndDelete({ _id: ObjectId(req.params.id) });
+
+    res.status(204).json();
+
+    return await connection.close();
+  } catch (err) {
+    return res.status(500).json({ "error": err });
+  }
 };
 
-module.exports.createCollection = function(req, res) {
-    if(!req.headers.token)
-    {
-        res.status(401).json({"error":"no token provided"});
-        return;
-    }
-    if(!req.body.collection)
-    {
-        res.status(400).json({"error":"collection name is required"});
-        return;
-    }
-    var token = decrypt(req.headers.token);
-    var payload = {};
-    jwt.verify(token, jwtkey, function(err, decoded) {
-        if(err) {
-            res.status(401).json({"error": "bad token"});
-        }
-        else {
-            payload = decoded;
-            payload.password = decrypt(payload.password);
-            payload.db = req.params.dbName;
-            var uri = getUri(payload);
-            var connection = mongoose.createConnection(uri, {useNewUrlParser:true});
-            connection.on('open', function() {
-                 try {   
-                    connection.db.createCollection(req.body.collection, function(error, result) {
-                        if(error) res.status(500).json({"error": error});
-                        else res.status(201).json({"success": true});
-                        connection.close();
-                    });
-                 } catch(e) {
-                    res.status(500).json({"error": "some error occurred"});
-                    connection.close();
-                 }
-            });
-        }
-    });
+module.exports.createCollection = async function (req, res) {
+  try {
+    if (!req.body.collection)
+      return res.status(400).json({ "error": "collection name is required" });
+
+    let payload = req.formPayload(req.params.dbName);
+    let uri = getUri(payload);
+    let connection = await mongoose.createConnection(uri, { useNewUrlParser: true });
+
+    await connection.db.createCollection(req.body.collection);
+
+    res.status(201).json({ "success": true });
+
+    return await connection.close();
+  } catch (e) {
+    return res.status(500).json({ "error": error });
+  }
 };
