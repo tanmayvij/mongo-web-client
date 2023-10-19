@@ -39,5 +39,4 @@ jobs:
       - name: Cleanup
         run: |
           rm -r public/
-          git checkout master
 
