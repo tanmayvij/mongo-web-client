@@ -1,0 +1,45 @@
+name: Deploy Angular App to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: Install Angular CLI
+        run: npm install -g @angular/cli
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the Angular app
+        run: ng build --prod
+
+      - name: Deploy to GitHub Pages
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git checkout --orphan gh-pages
+          git --work-tree=dist/ add --all
+          git --work-tree=dist/ commit -m "GitHub Pages deployment"
+          git branch -D gh-pages || true
+          git branch -m gh-pages
+          git push origin gh-pages --force
+
+      - name: Cleanup
+        run: |
+          rm -r dist/
+          git checkout main
+
