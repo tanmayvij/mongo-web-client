@@ -32,10 +32,8 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git checkout --orphan gh-pages
-          git --work-tree=dist/ add --all
-          git --work-tree=dist/ commit -m "GitHub Pages deployment"
-          git branch -D gh-pages || true
-          git branch -m gh-pages
+          git --work-tree=public/ add --all
+          git --work-tree=public/ commit -m "GitHub Pages deployment"
           git push origin gh-pages --force
 
       - name: Cleanup
