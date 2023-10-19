@@ -38,6 +38,6 @@ jobs:
 
       - name: Cleanup
         run: |
-          rm -r dist/
+          rm -r public/
           git checkout main
 
